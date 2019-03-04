@@ -36,6 +36,8 @@ function Test-ProjectFolder
 
         $FolderStructure = Get-Content ".\Functions\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json
         $ProjectFolderPath = "$($FolderStructure.BaseProjectFolder)\$ProjectFolderName"
+
+        Write-Verbose -Message "ProjectFolderPath: '$ProjectFolderName'"
         
         # Check BaseProjectFolder
         if ( -not (Test-Path -Path $ProjectFolderPath) )
@@ -60,7 +62,6 @@ function Test-ProjectFolder
             {
                 Write-Verbose -Message "'$ProjectFolderPath\$_' doesn't exist"
                 $Result.Folders = $false
-                break
             }
         }
 
@@ -70,7 +71,6 @@ function Test-ProjectFolder
             {
                 Write-Verbose -Message "'$ProjectFolderPath\$_' file doesn't exist"
                 $Result.Files = $false
-                break
             }
         }
 
@@ -80,9 +80,9 @@ function Test-ProjectFolder
             {
                 Write-Verbose -Message "'$ProjectFolderPath\$_' file doesn't exist"
                 $Result.dotx = $false
-                break
             }
         }
+        Write-Verbose -Message $Result
 
         Write-Output $Result
     }
