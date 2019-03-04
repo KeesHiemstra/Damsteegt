@@ -28,9 +28,16 @@ function Test-ProjectFolder
     }
     Process
     {
+        $Result = New-Object -TypeName psobject
+        Add-Member -InputObject $Result -NotePropertyName 'BaseFolders' -NotePropertyValue $true
+        Add-Member -InputObject $Result -NotePropertyName 'Folders' -NotePropertyValue $false
+        Add-Member -InputObject $Result -NotePropertyName 'Files' -NotePropertyValue $false
+        Add-Member -InputObject $Result -NotePropertyName 'dotx' -NotePropertyValue $false
+
         $FolderStructure = Get-Content ".\Functions\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json
         $ProjectFolderPath = "$($FolderStructure.BaseProjectFolder)\$ProjectFolderName"
         
+        # Check BaseProjectFolder
         if ( -not (Test-Path -Path $ProjectFolderPath) )
         {
             Write-Error -Message "'$ProjectFolderPath' does not exists."
@@ -38,12 +45,21 @@ function Test-ProjectFolder
             return
         }
 
+        # Check base project folders
+        $FolderStructure.BaseFolders | ForEach-Object {
+            if ( -not (Test-Path -Path "$ProjectFolderPath\$_") )
+            {
+                Write-Verbose -Message "'$ProjectFolderPath\$_' doesn't exist"
+                $Result.BaseFolders = $Result.BaseFolders -and $false
+            }
+        }
+        
         # Check subfolders
         $FolderStructure.Folders | ForEach-Object {
             if ( -not (Test-Path -Path "$ProjectFolderPath\$_") )
             {
                 Write-Verbose -Message "'$ProjectFolderPath\$_' doesn't exist"
-                Write-Output $false
+                $Result.Folders = $false
                 break
             }
         }
@@ -53,7 +69,7 @@ function Test-ProjectFolder
             if ( -not (Test-Path -Path "$ProjectFolderPath\$($_.Target)\$($_.Name)") )
             {
                 Write-Verbose -Message "'$ProjectFolderPath\$_' file doesn't exist"
-                Write-Output $false
+                $Result.Files = $false
                 break
             }
         }
@@ -63,12 +79,12 @@ function Test-ProjectFolder
             if ( -not (Test-Path -Path "$ProjectFolderPath\$($_.Target)\$($_.Name)") )
             {
                 Write-Verbose -Message "'$ProjectFolderPath\$_' file doesn't exist"
-                Write-Output $false
+                $Result.dotx = $false
                 break
             }
         }
 
-        Write-Output $true
+        Write-Output $Result
     }
     End
     {
