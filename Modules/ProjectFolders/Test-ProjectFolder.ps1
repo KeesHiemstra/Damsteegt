@@ -29,12 +29,13 @@ function Test-ProjectFolder
     Process
     {
         $Result = New-Object -TypeName psobject
+        Add-Member -InputObject $Result -NotePropertyName 'FolderName' -NotePropertyValue $ProjectFolderName
         Add-Member -InputObject $Result -NotePropertyName 'BaseFolders' -NotePropertyValue $true
         Add-Member -InputObject $Result -NotePropertyName 'Folders' -NotePropertyValue $false
         Add-Member -InputObject $Result -NotePropertyName 'Files' -NotePropertyValue $false
         Add-Member -InputObject $Result -NotePropertyName 'dotx' -NotePropertyValue $false
 
-        $FolderStructure = Get-Content ".\Functions\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json
+        $FolderStructure = Get-Content ".\Modules\ProjectFolders\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json
         $ProjectFolderPath = "$($FolderStructure.BaseProjectFolder)\$ProjectFolderName"
 
         Write-Verbose -Message "ProjectFolderPath: '$ProjectFolderName'"

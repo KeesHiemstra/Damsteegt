@@ -31,7 +31,7 @@ function Update-ProjectFolder
     }
     Process
     {
-        $FolderStructure = Get-Content ".\Functions\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json
+        $FolderStructure = Get-Content ".\Modules\ProjectFolders\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json
         $ProjectFolderPath = "$($FolderStructure.BaseProjectFolder)\$ProjectFolderName"
         
         if ( -not (Test-Path -Path $ProjectFolderPath) )
