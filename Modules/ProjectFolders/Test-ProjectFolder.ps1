@@ -6,6 +6,8 @@
     Test-ProjectFolder [-ProjectFolderName] "AD19.9876 New project test"
     
 .Notes
+    Version 1.01 (2019-03-05, Kees Hiemstra)
+    - Bug fix.
     Version 1.00 (2019-03-04, Kees Hiemstra)
     - Initial version.
 #>
@@ -20,6 +22,7 @@ function Test-ProjectFolder
         [Parameter(Mandatory=$true,
                    ValueFromPipelineByPropertyName=$true,
                    Position=0)]
+        [string]
         $ProjectFolderName
     )
 
@@ -29,13 +32,15 @@ function Test-ProjectFolder
     Process
     {
         $Result = New-Object -TypeName psobject
-        Add-Member -InputObject $Result -NotePropertyName 'FolderName' -NotePropertyValue $ProjectFolderName
-        Add-Member -InputObject $Result -NotePropertyName 'BaseFolders' -NotePropertyValue $true
+        Add-Member -InputObject $Result -NotePropertyName 'ProjectFolderName' -NotePropertyValue $ProjectFolderName
+        Add-Member -InputObject $Result -NotePropertyName 'BaseFolders' -NotePropertyValue $false
         Add-Member -InputObject $Result -NotePropertyName 'Folders' -NotePropertyValue $false
         Add-Member -InputObject $Result -NotePropertyName 'Files' -NotePropertyValue $false
         Add-Member -InputObject $Result -NotePropertyName 'dotx' -NotePropertyValue $false
 
         $FolderStructure = Get-Content ".\Modules\ProjectFolders\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json
+        Write-Verbose -Message "BaseProjectFolder: $($FolderStructure.BaseProjectFolder)"
+
         $ProjectFolderPath = "$($FolderStructure.BaseProjectFolder)\$ProjectFolderName"
 
         Write-Verbose -Message "ProjectFolderPath: '$ProjectFolderName'"
@@ -44,45 +49,63 @@ function Test-ProjectFolder
         if ( -not (Test-Path -Path $ProjectFolderPath) )
         {
             Write-Error -Message "'$ProjectFolderPath' does not exists."
-            Write-Output $false
+            Write-Output $Result
             return
         }
 
-        # Check base project folders
+        #region Base project folders
+        $Check = $true
         $FolderStructure.BaseFolders | ForEach-Object {
             if ( -not (Test-Path -Path "$ProjectFolderPath\$_") )
             {
                 Write-Verbose -Message "'$ProjectFolderPath\$_' doesn't exist"
-                $Result.BaseFolders = $Result.BaseFolders -and $false
+                $Check = $false
+            }
+            else
+            {
+                $Check = $Check -and $true
             }
         }
-        
-        # Check subfolders
+        $Result.BaseFolders = $Check
+        Write-Verbose "Base folders: $($Result.BaseFolders)"
+        #endregion
+
+        #region Subfolders
+        $Check = $true
         $FolderStructure.Folders | ForEach-Object {
             if ( -not (Test-Path -Path "$ProjectFolderPath\$_") )
             {
                 Write-Verbose -Message "'$ProjectFolderPath\$_' doesn't exist"
-                $Result.Folders = $false
+                $Check = $false
             }
         }
+        $Result.Folders = $Check
+        #endregion
 
-        # Check plain files
+        #region Plain files
+        $Check = $true
         $FolderStructure.Files | ForEach-Object {
             if ( -not (Test-Path -Path "$ProjectFolderPath\$($_.Target)\$($_.Name)") )
             {
                 Write-Verbose -Message "'$ProjectFolderPath\$_' file doesn't exist"
-                $Result.Files = $false
+                $Check = $false
             }
         }
+        $Result.Files = $Check
+        #endregion
 
-        # Check complex files
+        #region Complex files
+        $Check = $true
         $FolderStructure.dotx | ForEach-Object {
             if ( -not (Test-Path -Path "$ProjectFolderPath\$($_.Target)\$($_.Name)") )
             {
                 Write-Verbose -Message "'$ProjectFolderPath\$_' file doesn't exist"
-                $Result.dotx = $false
+                $Check = $false
             }
         }
+        $Result.dotx = $Check
+        #endregion
+
         Write-Verbose -Message $Result
 
         Write-Output $Result

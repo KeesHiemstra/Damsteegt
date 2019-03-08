@@ -9,20 +9,25 @@
 
     
 .Notes
+    Version 1.10 (2019-03-07, Kees Hiemstra)
+    - Added check through Test-ProjectFolder, it will skip the update is .BaseFolders -eq $false
     Version 1.00 (2019-03-04, Kees Hiemstra)
     - Initial version.
 #>
 function Update-ProjectFolder
 {
-    [CmdletBinding()]
+    [CmdletBinding(PositionalBinding=$true)]
     [Alias()]
     [OutputType([int])]
     Param
     (
         # Param1 help description
         [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
                    ValueFromPipelineByPropertyName=$true,
+                   ValueFromRemainingArguments=$false,
                    Position=0)]
+        [string]
         $ProjectFolderName
     )
 
@@ -40,6 +45,13 @@ function Update-ProjectFolder
             Write-Output $false
             return
         }
+
+        if ( -not (Test-ProjectFolder -ProjectFolderName $ProjectFolderName).BaseFolders )
+        {
+            Write-Error -Message "Base folders are not correct"
+            break
+        }
+
 
         # Check subfolders
         $FolderStructure.Folders | ForEach-Object {
