@@ -57,7 +57,7 @@ function Update-ProjectFolder
             return
         }
 
-        if ( -not (Test-ProjectFolder -ProjectFolderName $ProjectFolderName).BaseFolders )
+        if ( -not (Test-ProjectFolder -ProjectFolderName $ProjectFolderName -ProjectBaseFolder $ProjectBaseFolder).BaseFolders )
         {
             Write-Error -Message "Base folders are not correct"
             break
@@ -77,9 +77,14 @@ function Update-ProjectFolder
         $FolderStructure.Files | ForEach-Object {
             if ( -not (Test-Path -Path "$ProjectFolderPath\$($_.Target)\$($_.Name)") )
             {
-                $FileToCopy = Get-ChildItem -Path "$($_.Source)\$($_.Name)" | Sort-Object -Descending | Select-Object -First 1
-                Copy-Item -Path $FileToCopy -Destination "$ProjectFolderPath\$($_.Target)"
-                Write-Verbose "Copied '$FileToCopy' to '$ProjectFolderPath\$($_.Target)' "
+                $FileToCopy = Get-ChildItem -Path "$($_.Source)\$($_.Name)" |
+                    Sort-Object -Descending |
+                    Select-Object -First 1
+                if ($FileToCopy)
+                {
+                    Copy-Item -Path $FileToCopy -Destination "$ProjectFolderPath\$($_.Target)"
+                    Write-Verbose "Copied '$FileToCopy' to '$ProjectFolderPath\$($_.Target)' "
+                }
             }
         }
 
@@ -87,10 +92,15 @@ function Update-ProjectFolder
         $FolderStructure.dotx | ForEach-Object {
             if ( -not (Test-Path -Path "$ProjectFolderPath\$($_.Target)\$($_.Name)") )
             {
-                $FileToCopy = Get-ChildItem -Path "$($_.Source)\$($_.Name)" | Sort-Object -Descending | Select-Object -First 1
-                $FileName = $FileToCopy.Name.Replace($FileToCopy.Extension, "$($_.Extension)")
-                Copy-Item -Path $FileToCopy -Destination "$ProjectFolderPath\$($_.Target)\$FileName"
-                Write-Verbose "Copied '$FileToCopy' to '$ProjectFolderPath\$($_.Target)\$FileName' "
+                $FileToCopy = Get-ChildItem -Path "$($_.Source)\$($_.Name)" |
+                    Sort-Object -Descending |
+                    Select-Object -First 1
+                if ($FileToCopy)
+                {
+                    $FileName = $FileToCopy.Name.Replace($FileToCopy.Extension, "$($_.Extension)")
+                    Copy-Item -Path $FileToCopy -Destination "$ProjectFolderPath\$($_.Target)\$FileName"
+                    Write-Verbose "Copied '$FileToCopy' to '$ProjectFolderPath\$($_.Target)\$FileName' "
+                }
             }
         }
     }
