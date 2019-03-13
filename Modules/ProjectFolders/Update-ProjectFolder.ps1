@@ -9,6 +9,8 @@
 
     
 .Notes
+    Version 1.20 (2019-03-13, Kees Hiemstra)
+    - Added ProjectFolderName parameter.
     Version 1.10 (2019-03-07, Kees Hiemstra)
     - Added check through Test-ProjectFolder, it will skip the update is .BaseFolders -eq $false
     Version 1.00 (2019-03-04, Kees Hiemstra)
@@ -28,7 +30,14 @@ function Update-ProjectFolder
                    ValueFromRemainingArguments=$false,
                    Position=0)]
         [string]
-        $ProjectFolderName
+        $ProjectFolderName,
+
+        [Parameter(Mandatory=$false,
+                   Position=1)]
+        [ValidateSet('Alg', 'CS')]
+        [Alias('Base')]
+        [string]
+        $ProjectBaseFolder = 'Alg'
     )
 
     Begin
@@ -37,7 +46,9 @@ function Update-ProjectFolder
     Process
     {
         $FolderStructure = Get-Content ".\Modules\ProjectFolders\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json
-        $ProjectFolderPath = "$($FolderStructure.BaseProjectFolder)\$ProjectFolderName"
+        Write-Verbose -Message "BaseProjectFolder: $($FolderStructure.BaseProjectFolders.($ProjectBaseFolder))"
+
+        $ProjectFolderPath = "$($FolderStructure.BaseProjectFolders.($ProjectBaseFolder))\$ProjectFolderName"
         
         if ( -not (Test-Path -Path $ProjectFolderPath) )
         {
