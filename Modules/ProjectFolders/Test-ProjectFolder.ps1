@@ -6,6 +6,8 @@
     Test-ProjectFolder [-ProjectFolderName] "AD19.9876 New project test"
     
 .Notes
+    Version 1.10 (2019-03-13, Kees Hiemstra)
+    - Added ProjectFolderName parameter.
     Version 1.01 (2019-03-05, Kees Hiemstra)
     - Bug fix.
     Version 1.00 (2019-03-04, Kees Hiemstra)
@@ -23,7 +25,14 @@ function Test-ProjectFolder
                    ValueFromPipelineByPropertyName=$true,
                    Position=0)]
         [string]
-        $ProjectFolderName
+        $ProjectFolderName,
+
+        [Parameter(Mandatory=$false,
+                   Position=1)]
+        [ValidateSet('Alg', 'CS')]
+        [Alias('Base')]
+        [string]
+        $ProjectBaseFolder = 'Alg'
     )
 
     Begin
@@ -39,9 +48,9 @@ function Test-ProjectFolder
         Add-Member -InputObject $Result -NotePropertyName 'dotx' -NotePropertyValue $false
 
         $FolderStructure = Get-Content ".\Modules\ProjectFolders\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json
-        Write-Verbose -Message "BaseProjectFolder: $($FolderStructure.BaseProjectFolder)"
+        Write-Verbose -Message "BaseProjectFolder: $($FolderStructure.BaseProjectFolders.($ProjectBaseFolder))"
 
-        $ProjectFolderPath = "$($FolderStructure.BaseProjectFolder)\$ProjectFolderName"
+        $ProjectFolderPath = "$($FolderStructure.BaseProjectFolders.($ProjectBaseFolder))\$ProjectFolderName"
 
         Write-Verbose -Message "ProjectFolderPath: '$ProjectFolderName'"
         

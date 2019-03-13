@@ -7,7 +7,7 @@
 # - Initial version.
 
 Add-Content -Path "C:\Etc\Log\ProjectFolders.log" -Value "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') Started update"
-$CheckFolder = (Get-Content ".\Modules\ProjectFolders\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json).BaseProjectFolder
+$CheckFolder = (Get-Content ".\Modules\ProjectFolders\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json).BaseProjectFolders
 
 $DateCheck = (Get-Date).AddDays(-2)
 
