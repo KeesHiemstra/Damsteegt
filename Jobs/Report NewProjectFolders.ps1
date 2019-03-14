@@ -6,14 +6,29 @@
 Add-Content -Path "C:\Etc\Log\ProjectFolders.log" -Value "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') Started report"
 $PreviousFolders = Import-Csv -Path "C:\Etc\ProjectFolders\PreviousFolders.csv" -Delimiter "`t"
 
-$CheckDate = (Get-Date).AddDays(-5)
-$Folders = Get-ChildItem -Path "\\NASServer\Projecten\ALG" -Directory | 
-    Select-Object -Property Name, CreationTime |
-    Where-Object { $_.CreationTime -ge $CheckDate} |
-    Sort-Object -Property CreationTime
+$DateCheck = (Get-Date).AddDays(-5)
+
+# Prepare the folder-array
+$CheckFolders = (Get-Content ".\Modules\ProjectFolders\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json)
+$BaseProjectFolders = @{}
+$CheckFolders.BaseProjectFolders.psobject.Properties | ForEach-Object { $BaseProjectFolders[$_.Name] = $_.Value }
+
+$Folders = @()
+
+$BaseProjectFolders.Keys | 
+    ForEach-Object {
+        $ProjectBaseFolder = $_
+        $BaseProjectFolder = ($BaseProjectFolders.$_)
+
+        $Folders += Get-ChildItem -Path $BaseProjectFolder |
+            Where-Object { $_.Attributes -eq 'Directory' } |
+            Sort-Object -Property CreationTime -Descending |
+            Where-Object { $_.CreationTime -ge $DateCheck } |
+            Select-Object -Property @{n='Base'; e={$ProjectBaseFolder}}, Name, CreationTime
+        }
 
 $NewFolders = Compare-Object -ReferenceObject $PreviousFolders -DifferenceObject $Folders -PassThru |
-    Select-Object -Property Name, CreationTime 
+    Select-Object -Property Base, Name, CreationTime
 
 if ($NewFolders.Count -gt 0) {
     $NewFolders |
@@ -22,4 +37,3 @@ if ($NewFolders.Count -gt 0) {
 
 $Folders | 
     Export-csv -Path "C:\Etc\ProjectFolders\PreviousFolders.csv" -NoTypeInformation -Delimiter "`t"
-
