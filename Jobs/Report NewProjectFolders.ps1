@@ -1,5 +1,7 @@
 # Report the new project folders as mail.
 #
+# Version 1.10 (2019-03-14, Kees Hiemstra)
+# - Updated the ProjectFolderStructure.json with more Base project folders
 # Version 1.00 (2019-03-11, Kees Hiemstra)
 # - Initial version.
 
