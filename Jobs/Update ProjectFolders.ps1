@@ -9,11 +9,11 @@
 # - Initial version.
 
 Add-Content -Path "C:\Etc\Log\ProjectFolders.log" -Value "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') Started update"
-$CheckFolder = (Get-Content ".\Modules\ProjectFolders\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json).BaseProjectFolders
+$CheckFolders = (Get-Content ".\Modules\ProjectFolders\ProjectFolderStructure.json" | Out-String | ConvertFrom-Json)
 $DateCheck = (Get-Date).AddDays(-2)
 
 $BaseProjectFolders = @{}
-$CheckFolders.BaseProjectFolders.psobject.properties | ForEach-Object { $BaseProjectFolders[$_.Name] = $_.Value }
+$CheckFolders.BaseProjectFolders.psobject.Properties | ForEach-Object { $BaseProjectFolders[$_.Name] = $_.Value }
 
 $BaseProjectFolders.Keys | 
     ForEach-Object {
