@@ -1,7 +1,9 @@
 # Report the new project folders as mail.
 #
+# Version 1.11 (2019-03-18, Kees Hiemstra)
+# - Exclude older folders from the report.
 # Version 1.10 (2019-03-14, Kees Hiemstra)
-# - Updated the ProjectFolderStructure.json with more Base project folders
+# - Updated the ProjectFolderStructure.json with more Base project folders.
 # Version 1.00 (2019-03-11, Kees Hiemstra)
 # - Initial version.
 
@@ -30,6 +32,7 @@ $BaseProjectFolders.Keys |
         }
 
 $NewFolders = Compare-Object -ReferenceObject $PreviousFolders -DifferenceObject $Folders -PassThru |
+    Where-Object -FilterScript { $_.SideIndicator -eq '=>' } |
     Select-Object -Property Base, Name, CreationTime
 
 if ($NewFolders.Count -gt 0) {
