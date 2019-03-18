@@ -31,9 +31,9 @@ $BaseProjectFolders.Keys |
             Select-Object -Property @{n='Base'; e={$ProjectBaseFolder}}, Name, CreationTime
         }
 
-$NewFolders = Compare-Object -ReferenceObject $PreviousFolders -DifferenceObject $Folders -PassThru |
+$NewFolders = Compare-Object -ReferenceObject $PreviousFolders -DifferenceObject $Folders -Property Base, Name -PassThru |
     Where-Object -FilterScript { $_.SideIndicator -eq '=>' } |
-    Select-Object -Property Base, Name, CreationTime
+    Select-Object -Property Base, Name, CreationTime, SideIndicator
 
 if ($NewFolders.Count -gt 0) {
     $NewFolders |
